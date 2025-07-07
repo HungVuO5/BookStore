@@ -5,6 +5,7 @@
 package implement;
 import dal.GenericDAO;
 import entity.*;
+import java.util.LinkedHashMap;
 import java.util.List;
 /**
  *
@@ -21,5 +22,20 @@ public class AccountDAO extends GenericDAO<Account>{
     public int insert(Account t) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+
+    public Account findByUsernameAndPass(Account account) {
+         String sql = "SELECT *\n"
+                + "  FROM [dbo].[Account]\n"
+                + "  where username = ? and password = ?";
+        
+        parameterMap = new LinkedHashMap<>();
+        parameterMap.put("username", account.getUsername());
+        parameterMap.put("password", account.getPassword());
+        List<Account> list = queryGenericDAO(Account.class, sql, parameterMap) ;
+        return list.isEmpty() ? null 
+                              : list.get(0);
+    }
+    
+
     
 }

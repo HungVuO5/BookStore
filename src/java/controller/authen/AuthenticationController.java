@@ -4,19 +4,21 @@
  */
 package controller.authen;
 
+import entity.Account;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-
+import implement.*;
+import constant.*;
 /**
  *
  * @author nguye
  */
 public class AuthenticationController extends HttpServlet {
-
+    AccountDAO accountDAO = new AccountDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -30,6 +32,9 @@ public class AuthenticationController extends HttpServlet {
         switch (action) {
             case "login":
                 url = "view/authen/login.jsp";
+                break;
+            case "log-out":
+                url = logOut(request,response);
                 break;
             default:
                 url = "home";
@@ -52,9 +57,12 @@ public class AuthenticationController extends HttpServlet {
             case "login":
                 url = loginDoPost(request,response);
                 break;
+
             default:
                 url = "home";
         }
+            request.getRequestDispatcher(url).forward(request, response);
+
     }
 
     @Override
@@ -63,13 +71,34 @@ public class AuthenticationController extends HttpServlet {
     }// </editor-fold>
 
     private String loginDoPost(HttpServletRequest request, HttpServletResponse response) {
+        String url = null;
         //get ve ttin nguoi dung nhap
-        
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
         //ktra ton tai 
+        Account account = Account.builder()
+                .username(username)
+                .password(password)
+                .build();
+        Account accFoundByUsernameAndPass = accountDAO.findByUsernameAndPass(account);
         
         //true-> trang home(set account)
+        if (accFoundByUsernameAndPass != null) {
+            request.getSession().setAttribute(CommonConst.SESSION_ACCOUNT,
+                    accFoundByUsernameAndPass);
+            url = "home";
+            //false-> login+ bao loi
+        }else{
+            request.setAttribute("error", "Username or password incorrect !");
+            url = "view/authen/login.jsp";
+        }
+        return url;
         
-        //false-> login+ bao loi
+    }
+
+    private String logOut(HttpServletRequest request, HttpServletResponse response) {
+        request.getSession().removeAttribute(CommonConst.SESSION_ACCOUNT);
+        return "home";
     }
 
 }
